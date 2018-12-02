@@ -1,5 +1,4 @@
 
-
 class Grade():
 
     def __init__(self, student_id, course_code, score):
@@ -7,62 +6,83 @@ class Grade():
         self.course_code = course_code
         self.score = score
 
+    def __eq__(self, other):
+        return self.student_id == other.student_id and \
+            self.course_code == other.course_code
+
+
+    def fix_fields(self):
+        try:
+            self.student_id = int(self.student_id)
+            self.course_code = int(self.course_code)
+        except(TypeError):
+            raise('Student id or course code is not integer')
+
+        try:
+            self.score = float(self.score)
+        except(TypeError):
+            raise('Score is not float')
+
+
 
 class CourseUtil():
 
     def __init__(self):
-        self.file_line = list()
+        self.grades = list()
+        self.file_address = 'source.txt'
 
     def set_file(self, address):
         self.file_address = address
         with open(address, 'r') as f:
             for line in f:
-                self.file_line.append(line.rstrip().split(' '))
+                grade = Grade(*line.rstrip().split(' '))
+                grade.fix_fields()
+                self.grades.append(grade)
 
     def load(self, line_number):
-        if (line_number-1) > len(self.file_line):
+        if (line_number-1) > len(self.grades):
             return None
 
-        grade = Grade(*self.file_line[line_number-1])
-        return grade
+        return self.grades[line_number-1]
 
     def save(self, grade):
-        from pudb import set_trace; set_trace()
-        if grade.student_id not in [int(raw[0]) for raw in self.file_line] or \
-                grade.course_code not in [int(raw[1]) for raw in self.file_line]:
-            self.file_line.append([str(grade.student_id), str(grade.course_code),
-                                  str(grade.score)])
-            with open(self.file_address, 'a') as f:
-                f.write(' '.join(self.file_line[-1]))
+        for element in self.grades:
+            if grade == element:
+                return None
 
-        from pudb import set_trace; set_trace()
-        return 1
+        self.grades.append(grade)
+        with open(self.file_address, 'a') as f:
+            f.write(' '.join([str(grade.student_id), str(grade.course_code),
+                              str(grade.score), '\n']))
 
     def calc_course_average(self, course_id):
-        count = 1
-        average = 0
-        for raw in self.file_line:
-            if int(raw[0]) == course_id:
-                average = (average + float(raw[2])) / count
+        count = 0
+        grade_sum = 0
+        for grade in self.grades:
+            if grade.course_code == course_id:
+                grade_sum = grade_sum + grade.score
                 count = count + 1
-        return average
+
+        return grade_sum / count
 
     def calc_student_average(self, student_id):
-        count = 1
-        average = 0
-        for raw in self.file_line:
-            if int(raw[0]) == student_id:
-                average = (average + float(raw[2])) / count
+        count = 0
+        grade_sum = 0
+        for grade in self.grades:
+            if grade.student_id == student_id:
+                grade_sum = grade_sum + grade.score
                 count = count + 1
-        return average
+
+        return grade_sum / count
 
     def count(self):
-        return len(self.file_line)
+        return len(self.grades)
 
 if __name__ == '__main__':
     util = CourseUtil()
-    util.set_file('source.txt')
-    grade = util.load(1)
-    grade = Grade(12, 1, 16)
-    util.save(grade)
-    print(util.count())
+    grade1 = Grade(1, 1, 12)
+    grade2 = Grade(1, 2, 18.5)
+    grade3 = Grade(2, 2, 20)
+    util.save(grade1)
+    util.save(grade2)
+    util.save(grade3)
