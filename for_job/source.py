@@ -29,7 +29,7 @@ class CourseUtil():
 
     def __init__(self):
         self.grades = list()
-        self.file_address = 'source.txt'
+        self.file_address = None
 
     def set_file(self, address):
         self.file_address = address
@@ -46,14 +46,14 @@ class CourseUtil():
         return self.grades[line_number-1]
 
     def save(self, grade):
-        for element in self.grades:
-            if grade == element:
-                return None
+        if grade in self.grades:
+            return None
 
         self.grades.append(grade)
-        with open(self.file_address, 'a') as f:
-            f.write(' '.join([str(grade.student_id), str(grade.course_code),
-                              str(grade.score), '\n']))
+        if self.file_address:
+            with open(self.file_address, 'a') as f:
+                f.write(' '.join([str(grade.student_id), str(grade.course_code),
+                                  str(grade.score), '\n']))
 
     def calc_course_average(self, course_id):
         count = 0
