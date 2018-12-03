@@ -30,14 +30,21 @@ class CourseUtil():
     def __init__(self):
         self.grades = list()
         self.file_address = None
+        self.pre_set_grades = list()
 
     def set_file(self, address):
+        self.grades = []
         self.file_address = address
         with open(address, 'r') as f:
             for line in f:
                 grade = Grade(*line.rstrip().split(' '))
                 grade.fix_fields()
-                self.grades.append(grade)
+                if grade not in self.grades:
+                    self.grades.append(grade)
+
+        if len(self.pre_set_grades) != 0:
+            for element in self.pre_set_grades:
+                self.save(element)
 
     def load(self, line_number):
         if (line_number-1) > len(self.grades):
@@ -49,11 +56,15 @@ class CourseUtil():
         if grade in self.grades:
             return None
 
-        self.grades.append(grade)
+        if not self.file_address:
+            self.pre_set_grades.append(grade)
+
         if self.file_address:
+            self.grades.append(grade)
             with open(self.file_address, 'a') as f:
                 f.write(' '.join([str(grade.student_id), str(grade.course_code),
                                   str(grade.score), '\n']))
+
 
     def calc_course_average(self, course_id):
         count = 0
@@ -83,6 +94,11 @@ if __name__ == '__main__':
     grade1 = Grade(1, 1, 12)
     grade2 = Grade(1, 2, 18.5)
     grade3 = Grade(2, 2, 20)
+    grade4 = Grade(1, 4, 15)
+    grade5 = Grade(3, 1, 20)
     util.save(grade1)
     util.save(grade2)
     util.save(grade3)
+    util.save(grade4)
+    util.save(grade5)
+    util.set_file('source.txt')
