@@ -59,7 +59,7 @@ class CourseUtil():
         if not self.file_address:
             self.pre_set_grades.append(grade)
 
-        if self.file_address:
+        else:
             self.grades.append(grade)
             with open(self.file_address, 'a') as f:
                 f.write(' '.join([str(grade.student_id), str(grade.course_code),
